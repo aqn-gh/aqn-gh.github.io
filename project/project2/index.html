@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Aidan Nguyen" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 2: Project 2: Modeling, Testing, and Predicting</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project2/">Project 2: Project 2: Modeling, Testing, and Predicting</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<pre class="r"><code># install.packages(&#39;fivethirtyeight&#39;)
+library(fivethirtyeight)
+library(tidyverse)
+library(ggplot2)
+library(cluster)
+library(sandwich)
+library(lmtest)
+data(police_killings)</code></pre>
+<pre class="r"><code>pk_data &lt;- police_killings %&gt;% na.omit</code></pre>
+<div id="introduction" class="section level3">
+<h3>0. Introduction</h3>
+<p>The data set I will be using is the police_killings data set. This data set records victims of police brutality in the United States in 2015. This data set is measuring the levels of police brutality in the United States in 2015 with 410 observations. Some observations from this data set include the victim’s name, age, biological gender in a binary fashion (male or female), whether the victim was armed or not, and the state the murder occurred in. Observations of the counties in which the killings happened as well as it’s respective income level, the proportion of the county that is White, Black, or Hispanic, and the level of unemployment in the county is also observed.</p>
+</div>
+<div id="manova" class="section level3">
+<h3>1. MANOVA</h3>
+<pre class="r"><code>res.man &lt;- manova(cbind(age, share_black, p_income, h_income, 
+    pov) ~ raceethnicity, data = pk_data)
+summary(res.man)</code></pre>
+<pre><code>##                Df  Pillai approx F num Df den Df    Pr(&gt;F)    
+## raceethnicity   4 0.43431   9.8415     20   1616 &lt; 2.2e-16 ***
+## Residuals     405                                             
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(res.man)</code></pre>
+<pre><code>##  Response age :
+##                Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## raceethnicity   4   6168 1541.96  10.322 5.723e-08 ***
+## Residuals     405  60500  149.38                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response share_black :
+##                Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## raceethnicity   4  74519 18629.8  41.069 &lt; 2.2e-16 ***
+## Residuals     405 183719   453.6                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response p_income :
+##                Df     Sum Sq   Mean Sq F value  Pr(&gt;F)  
+## raceethnicity   4 8.3957e+08 209891998  2.5041 0.04181 *
+## Residuals     405 3.3946e+10  83817836                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response h_income :
+##                Df     Sum Sq    Mean Sq F value   Pr(&gt;F)   
+## raceethnicity   4 6.7014e+09 1675356560  3.9134 0.003946 **
+## Residuals     405 1.7339e+11  428112533                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response pov :
+##                Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## raceethnicity   4   6968 1742.04  10.446 4.618e-08 ***
+## Residuals     405  67539  166.76                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>pairwise.t.test(pk_data$age, pk_data$raceethnicity, p.adj = &quot;bonf&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  pk_data$age and pk_data$raceethnicity 
+## 
+##                 Asian/Pacific Islander Black   Hispanic/Latino Native American
+## Black           0.77                   -       -               -              
+## Hispanic/Latino 0.35                   1.00    -               -              
+## Native American 0.72                   1.00    1.00            -              
+## White           1.00                   7.4e-06 1.5e-05         0.37           
+## 
+## P value adjustment method: bonferroni</code></pre>
+<pre class="r"><code>pairwise.t.test(pk_data$share_black, pk_data$raceethnicity, p.adj = &quot;bonf&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  pk_data$share_black and pk_data$raceethnicity 
+## 
+##                 Asian/Pacific Islander Black  Hispanic/Latino Native American
+## Black           0.0069                 -      -               -              
+## Hispanic/Latino 1.0000                 &lt;2e-16 -               -              
+## Native American 1.0000                 0.0267 1.0000          -              
+## White           1.0000                 &lt;2e-16 1.0000          1.0000         
+## 
+## P value adjustment method: bonferroni</code></pre>
+<pre class="r"><code>pairwise.t.test(pk_data$p_income, pk_data$raceethnicity, p.adj = &quot;bonf&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  pk_data$p_income and pk_data$raceethnicity 
+## 
+##                 Asian/Pacific Islander Black Hispanic/Latino Native American
+## Black           1.00                   -     -               -              
+## Hispanic/Latino 1.00                   1.00  -               -              
+## Native American 0.83                   1.00  1.00            -              
+## White           1.00                   0.24  0.53            0.65           
+## 
+## P value adjustment method: bonferroni</code></pre>
+<pre class="r"><code>pairwise.t.test(pk_data$h_income, pk_data$raceethnicity, p.adj = &quot;bonf&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  pk_data$h_income and pk_data$raceethnicity 
+## 
+##                 Asian/Pacific Islander Black Hispanic/Latino Native American
+## Black           1.000                  -     -               -              
+## Hispanic/Latino 1.000                  1.000 -               -              
+## Native American 1.000                  1.000 1.000           -              
+## White           1.000                  0.018 0.104           0.531          
+## 
+## P value adjustment method: bonferroni</code></pre>
+<pre class="r"><code>pairwise.t.test(pk_data$pov, pk_data$raceethnicity, p.adj = &quot;bonf&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  pk_data$pov and pk_data$raceethnicity 
+## 
+##                 Asian/Pacific Islander Black   Hispanic/Latino Native American
+## Black           1.0000                 -       -               -              
+## Hispanic/Latino 1.0000                 1.0000  -               -              
+## Native American 0.2840                 0.5125  0.4039          -              
+## White           1.0000                 9.4e-07 0.0018          0.0156         
+## 
+## P value adjustment method: bonferroni</code></pre>
+<p>11 tests were performed with a 0.05 probability of a type I error if unadjusted and a 0.0045 bonferroni correction significance level. There was a significant difference in the age in which the victim was slain, the share of the population that is Black in the communities that the victims lived in, the household income of the victims, and the tract-level poverty rate in the communities that the victims lived, across the different race and ethnicities. The personal income of the victims, however, did not pass the needed p-value. This can be interpreted that victims of police killings do not have significant differences. The MANOVA assumption that there was an adequate sample size may not have been met as, thankfully, the data set of police killings is as extensive as other data sets may be. The observations are also not randomly and independently sampled as the data set records all police killings that occurred in 2015.</p>
+</div>
+<div id="randomization-test" class="section level3">
+<h3>2. Randomization Test</h3>
+<pre class="r"><code>fit &lt;- aov(county_income ~ armed, data = pk_data)
+summary(fit)</code></pre>
+<pre><code>##              Df    Sum Sq   Mean Sq F value Pr(&gt;F)
+## armed         6 4.535e+08  75586610    0.44  0.852
+## Residuals   403 6.921e+10 171735993</code></pre>
+<p>I performed an ANOVA test on whether the victim was armed and the median household income of the county that the victim was killed in. The null hypothesis is that there is no difference in the mean of the median household incomes across the categorical variable of whether the victim was armed or not. The alternative hypothesis is that there is a difference in the mean of the median household incomes across the categorical variable of whether the victim was armed or not. With a p-value of 0.852, I fail to reject the null hypothesis. There is not a difference between the means of the median household incomes across whether the victim was armed or not. I do not interpret this as police killings as random, but rather indicative that police killings disproportionately frequent counties of similar economic statuses.</p>
+</div>
+<div id="linear-regression-model" class="section level3">
+<h3>3. Linear Regression Model</h3>
+<pre class="r"><code>fit &lt;- lm(share_black ~ county_income + pov, data = pk_data)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = share_black ~ county_income + pov, data = pk_data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -51.857 -13.845  -5.798   7.156  87.494 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -1.525e+00  5.782e+00  -0.264    0.792    
+## county_income  5.363e-05  9.078e-05   0.591    0.555    
+## pov            7.950e-01  8.778e-02   9.057   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 22.86 on 407 degrees of freedom
+## Multiple R-squared:  0.176,  Adjusted R-squared:  0.172 
+## F-statistic: 43.47 on 2 and 407 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>ggplot(pk_data, aes(x = share_black, y = county_income)) + geom_point() + 
+    stat_smooth(method = &quot;lm&quot;, col = &quot;red&quot;) + labs(x = &quot;Proportion of Black People in a County&quot;, 
+    y = &quot;Median Household Income&quot;, title = &quot;Black Proportion vs. Median Household Income In A County&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(pk_data, aes(x = share_black, y = pov)) + geom_point() + 
+    stat_smooth(method = &quot;lm&quot;, col = &quot;red&quot;) + labs(x = &quot;Proportion of Black People in a County&quot;, 
+    y = &quot;Poverty Rate&quot;, title = &quot;Black Proportion vs. Poverty Rate In A County&quot;)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(fit, 1)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(fit, 2)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(fit, 3)</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit2 &lt;- coeftest(fit, vcov = vcovHC(fit))
+summary(fit2)</code></pre>
+<pre><code>##     Estimate            Std. Error          t value           Pr(&gt;|t|)     
+##  Min.   :-1.5246871   Min.   :0.000087   Min.   :-0.2804   Min.   :0.0000  
+##  1st Qu.:-0.7623168   1st Qu.:0.054751   1st Qu.: 0.1675   1st Qu.:0.2693  
+##  Median : 0.0000536   Median :0.109415   Median : 0.6154   Median :0.5386  
+##  Mean   :-0.2432059   Mean   :1.849208   Mean   : 2.5337   Mean   :0.4393  
+##  3rd Qu.: 0.3975347   3rd Qu.:2.773769   3rd Qu.: 3.9407   3rd Qu.:0.6590  
+##  Max.   : 0.7950157   Max.   :5.438123   Max.   : 7.2660   Max.   :0.7793</code></pre>
+<p>For the linear regression model, the response variable I chose was the proportion of Black individuals in the county that the victim was killed. The predictor variables I used was the median household income of the county and the tract-level poverty rate of the county. The coefficient estimate for the county_income variable and the poverty variable was 5.363e-05 and 7.950e-01 respectively. The coefficient estimates can be interpreted in that as the proportion of Black people increases in a county, the median household income for that county decreases. On the same note, as the proportion of Black people increases in a county, the poverty rate increases. The variation in the outcome explained by the model is 0.176. Having graphed the assumptions, the assumption for linearity is very roughly passed, the assumption for normality is not passed, and the assumption for homoskedasticity is passed. The regression results with robust standard errors was ran.</p>
+</div>
+<div id="bootstrapped-standard-errors" class="section level3">
+<h3>4. Bootstrapped Standard Errors</h3>
+<pre class="r"><code>fit &lt;- lm(share_black ~ county_income + pov, data = pk_data)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = share_black ~ county_income + pov, data = pk_data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -51.857 -13.845  -5.798   7.156  87.494 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -1.525e+00  5.782e+00  -0.264    0.792    
+## county_income  5.363e-05  9.078e-05   0.591    0.555    
+## pov            7.950e-01  8.778e-02   9.057   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 22.86 on 407 degrees of freedom
+## Multiple R-squared:  0.176,  Adjusted R-squared:  0.172 
+## F-statistic: 43.47 on 2 and 407 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>means &lt;- vector()
+for (i in 1:5000) {
+    samp &lt;- sample(pk_data$share_black, replace = T)
+    means[i] &lt;- mean(samp)
+}
+sd(means)</code></pre>
+<pre><code>## [1] 1.234124</code></pre>
+<pre class="r"><code>quantile(means, c(0.025, 0.975))</code></pre>
+<pre><code>##     2.5%    97.5% 
+## 15.93777 20.73929</code></pre>
+<pre class="r"><code>means2 &lt;- vector()
+
+for (i in 1:5000) {
+    samp &lt;- sample(pk_data$county_income, replace = T)
+    means2[i] &lt;- mean(samp)
+}
+sd(means2)</code></pre>
+<pre><code>## [1] 646.4241</code></pre>
+<pre class="r"><code>quantile(means2, c(0.025, 0.975))</code></pre>
+<pre><code>##     2.5%    97.5% 
+## 51839.12 54361.66</code></pre>
+<pre class="r"><code>means3 &lt;- vector()
+for (i in 1:5000) {
+    samp &lt;- sample(pk_data$pov, replace = T)
+    means3[i] &lt;- mean(samp)
+}
+sd(means3)</code></pre>
+<pre><code>## [1] 0.6696749</code></pre>
+<pre class="r"><code>quantile(means3, c(0.025, 0.975))</code></pre>
+<pre><code>##     2.5%    97.5% 
+## 20.11384 22.69689</code></pre>
+</div>
+<div id="logistic-regression-model-for-binary-variable" class="section level3">
+<h3>5. Logistic Regression Model For Binary Variable</h3>
+<pre class="r"><code># fit4 &lt;- glm((as.numeric(gender)) ~ p_income + college, data
+# = pk_data) summary(fit4)</code></pre>
+<p>For this linear regression model, I chose the variables of personal income of the victim, the proportion of the county that has at least a Bachelor of Arts, and the binary variable I chose is the gender of the victim. The coefficient estimates are 2.622e-06 and -2.697e-01.
+This can be interpreted in which that male victims will have a lower average personal income than female victims.</p>
+</div>
+<div id="logistic-regression-model-for-binary-variable-ii" class="section level3">
+<h3>6. Logistic Regression Model for Binary Variable II</h3>
+<pre class="r"><code># fit2 &lt;- glm((as.numeric(gender)) ~ age + pop + share_white
+# + share_black + share_hispanic + p_income + h_income +
+# county_income + comp_income + county_bucket + nat_bucket +
+# pov + urate + college, data = pk_data) summary(fit2)</code></pre>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

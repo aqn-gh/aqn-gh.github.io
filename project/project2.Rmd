@@ -1,0 +1,119 @@
+---
+title: 'Project 2: Project 2: Modeling, Testing, and Predicting'
+author: "Aidan Nguyen AQN264"
+date: "4/4/2021"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", 
+    warning = F, message = F, tidy = TRUE, tidy.opts = list(width.cutoff = 60), 
+    R.options = list(max.print = 100))
+```
+
+```{R}
+#install.packages("fivethirtyeight")
+library(fivethirtyeight)
+library(tidyverse)
+library(ggplot2)
+library(cluster)
+library(sandwich); library(lmtest)
+data(police_killings)
+```
+
+```{R}
+pk_data <- police_killings %>% na.omit
+```
+
+### 0. Introduction
+  The data set I will be using is the police_killings data set. This data set records victims of police brutality in the United States in 2015. This data set is measuring the levels of police brutality in the United States in 2015 with 410 observations. Some observations from this data set include the victim's name, age, biological gender in a binary fashion (male or female), whether the victim was armed or not, and the state the murder occurred in. Observations of the counties in which the killings happened as well as it's respective income level, the proportion of the county that is White, Black, or Hispanic, and the level of unemployment in the county is also observed.  
+  
+### 1.  MANOVA 
+```{R}
+res.man <- manova(cbind(age, share_black, p_income, h_income, pov) ~ raceethnicity, data = pk_data)
+summary(res.man)
+summary.aov(res.man)
+pairwise.t.test(pk_data$age, pk_data$raceethnicity, p.adj = "bonf")
+pairwise.t.test(pk_data$share_black, pk_data$raceethnicity, p.adj = "bonf")
+pairwise.t.test(pk_data$p_income, pk_data$raceethnicity, p.adj = "bonf")
+pairwise.t.test(pk_data$h_income, pk_data$raceethnicity, p.adj = "bonf")
+pairwise.t.test(pk_data$pov, pk_data$raceethnicity, p.adj = "bonf")
+```
+
+11 tests were performed with a 0.05 probability of a type I error if unadjusted and a 0.0045 bonferroni correction significance level. There was a significant difference in the age in which the victim was slain, the share of the population that is Black in the communities that the victims lived in, the household income of the victims, and the tract-level poverty rate in the communities that the victims lived, across the different race and ethnicities. The personal income of the victims, however, did not pass the needed p-value. This can be interpreted that victims of police killings do not have significant differences. The MANOVA assumption that there was an adequate sample size may not have been met as, thankfully, the data set of police killings is as extensive as other data sets may be. The observations are also not randomly and independently sampled as the data set records all police killings that occurred in 2015. 
+
+### 2. Randomization Test
+```{R}
+fit <- aov(county_income ~ armed, data = pk_data)
+summary(fit)
+```
+
+I performed an ANOVA test on whether the victim was armed and the median household income of the county that the victim was killed in. The null hypothesis is that there is no difference in the mean of the median household incomes across the categorical variable of whether the victim was armed or not. The alternative hypothesis is that there is a difference in the mean of the median household incomes across the categorical variable of whether the victim was armed or not. With a p-value of 0.852, I fail to reject the null hypothesis. There is not a difference between the means of the median household incomes across whether the victim was armed or not. I do not interpret this as police killings as random, but rather indicative that police killings disproportionately frequent counties of similar economic statuses. 
+
+### 3. Linear Regression Model
+```{R}
+fit <- lm(share_black ~ county_income + pov, data = pk_data)
+summary(fit)
+ggplot(pk_data, aes(x = share_black, y = county_income)) + geom_point() + stat_smooth(method = "lm", col = "red") +  labs(x="Proportion of Black People in a County", y = "Median Household Income", title = "Black Proportion vs. Median Household Income In A County")
+ggplot(pk_data, aes(x = share_black, y = pov)) + geom_point() + stat_smooth(method = "lm", col = "red") + labs(x="Proportion of Black People in a County", y = "Poverty Rate", title = "Black Proportion vs. Poverty Rate In A County")
+plot(fit, 1)
+plot(fit, 2)
+plot(fit, 3)
+fit2 <- coeftest(fit, vcov = vcovHC(fit))
+summary(fit2)
+
+```
+For the linear regression model, the response variable I chose was the proportion of Black individuals in the county that the victim was killed. The predictor variables I used was the median household income of the county and the tract-level poverty rate of the county. The coefficient estimate for the county_income variable and the poverty variable was 5.363e-05 and 7.950e-01 respectively. The coefficient estimates can be interpreted in that as the proportion of Black people increases in a county, the median household income for that county decreases. On the same note, as the proportion of Black people increases in a county, the poverty rate increases. The variation in the outcome explained by the model is 0.176. Having graphed the assumptions, the assumption for linearity is very roughly passed, the assumption for normality is not passed, and the assumption for homoskedasticity is passed. The regression results with robust standard errors was ran.
+
+### 4. Bootstrapped Standard Errors
+```{R}
+fit <- lm(share_black ~ county_income + pov, data = pk_data)
+summary(fit)
+
+means<-vector()
+for(i in 1:5000){
+samp<-sample(pk_data$share_black,replace=T)
+means[i]<-mean(samp)
+}
+sd(means)
+quantile(means,c(.025, .975))
+means2<-vector()
+
+for(i in 1:5000){
+samp<-sample(pk_data$county_income,replace=T)
+means2[i]<-mean(samp)
+}
+sd(means2)
+quantile(means2,c(.025, .975))
+
+means3<-vector()
+for(i in 1:5000){
+samp<-sample(pk_data$pov,replace=T)
+means3[i]<-mean(samp)
+}
+sd(means3)
+quantile(means3,c(.025, .975))
+```
+
+### 5. Logistic Regression Model For Binary Variable
+```{R}
+#fit4 <- glm((as.numeric(gender)) ~ p_income + college, data = pk_data)
+#summary(fit4)
+
+```
+For this linear regression model, I chose the variables of personal income of the victim, the proportion of the county that has at least a Bachelor of Arts, and the binary variable I chose is the gender of the victim. The coefficient estimates are 2.622e-06 and -2.697e-01.
+This can be interpreted in which that male victims will have a lower average personal income than female victims.  
+
+### 6. Logistic Regression Model for Binary Variable II
+```{R}
+#fit2 <- glm((as.numeric(gender)) ~ age + pop + share_white + share_black + share_hispanic + p_income + h_income + county_income + comp_income + county_bucket + nat_bucket + pov + urate + college, data = pk_data)
+#summary(fit2)
+
+```

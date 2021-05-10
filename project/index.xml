@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on Aidan Nguyen</title>
+    <link>/project/</link>
+    <description>Recent content in Projects on Aidan Nguyen</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Project 1: Exploratory Data Analysis</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description># install.packages(&amp;#39;fivethirtyeight&amp;#39;) library(fivethirtyeight) library(tidyverse) library(ggplot2) library(cluster) data(hate_crimes) data(police_killings) 0. Introduction As a first generation Asian-American, it is heartbreaking to see the increasing amount of division and hate spread throughout The United States of America. This project will analyze two data sets. The first data set observes hate crimes committed in each state and data representative of their respective state such as:the median household income in 2016, the share of the population that is unemployed in 2016, the share of the population that lives in metropolitan areas in 2015, the share of adults that are 25 and older with a high-school degree in 2009, the share of the population that are U.</description>
+    </item>
+    
+    <item>
+      <title>Project 2: Project 2: Modeling, Testing, and Predicting</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description># install.packages(&amp;#39;fivethirtyeight&amp;#39;) library(fivethirtyeight) library(tidyverse) library(ggplot2) library(cluster) library(sandwich) library(lmtest) data(police_killings) pk_data &amp;lt;- police_killings %&amp;gt;% na.omit 0. Introduction The data set I will be using is the police_killings data set. This data set records victims of police brutality in the United States in 2015. This data set is measuring the levels of police brutality in the United States in 2015 with 410 observations. Some observations from this data set include the victim’s name, age, biological gender in a binary fashion (male or female), whether the victim was armed or not, and the state the murder occurred in.</description>
+    </item>
+    
+  </channel>
+</rss>

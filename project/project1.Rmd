@@ -1,0 +1,113 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "Aidan Nguyen AQN264"
+date: "4/4/2021"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", 
+    warning = F, message = F, tidy = TRUE, tidy.opts = list(width.cutoff = 60), 
+    R.options = list(max.print = 100))
+```
+
+```{R}
+#install.packages("fivethirtyeight")
+library(fivethirtyeight)
+library(tidyverse)
+library(ggplot2)
+library(cluster)
+data(hate_crimes)
+data(police_killings)
+```
+
+## 0. Introduction
+
+  As a first generation Asian-American, it is heartbreaking to see the increasing amount of division and hate spread throughout The United States of America. This project will analyze two data sets. The first data set observes hate crimes committed in each state and data representative of their respective state such as:the median household income in 2016, the share of the population that is unemployed in 2016, the share of the population that lives in metropolitan areas in 2015, the share of adults that are 25 and older with a high-school degree in 2009, the share of the population that are U.S. citizens in 2015, the share of white residents who are living in poverty in 2015, the Gini Index in 2015, the share of the population that is not white in 2015, the share of 2016 U.S. presidential voters who voted for Donald Trump, Hate crimes per 100,000 population through November 9-18 in 2016, and the average annual hate crimes per 100,000 population between 2010 and 2015. This data was acquired through publicly available data sources via FBI hate crimes data and the Southern Poverty Law Center. The second data set contains information about victims of police shootings such as their name, their gender, their race and ethnicity, when they were murdered, and where they were murdered. This data was acquired from an interactive database titled "The Counted" which was published by the Guardian. I chose these data sets to construct my project over because as previously stated, I am an Asian-American. The U.S. is seeing an astronomical uptick in hate crimes committed against not only immigrants, but all People of Color. I have decided to base my project over these two data sets in hopes of bettering my understanding of the relationship between occurrences of hate crimes and occurrences of police brutality. A potential association I am expecting to observe is states with high levels of hate crimes committed also seeing high levels of fatal police shootings. 
+
+## 1. Tidying
+
+Data is already tidy, tidying used in correlation heatmap. 
+
+
+## 2. Joining/Merging
+```{R}
+#Creation of merged data set
+Merged_Data <- hate_crimes %>% full_join(police_killings, by=c("state_abbrev" = "state")) %>% na.omit
+Merged_Data %>% na.omit
+```
+  I used full_join to completely merge the two data sets based on their common variable of the state in which either the hate crime or the fatal police shooting occurred. The hate_crimes data set contained 51 observations, 1 for each state with an additional observation for the District of Columbia. The police_killings data set contained 467 observations, 1 for each victim of police brutality. I chose the state variable because I want to isolate the location in which these two afflictions occur. With the two data sets merged, it will be easier to highlight states that have high levels of deaths due to police. If a particular state has a relatively high level of hate crimes committed in it, I want to know if fatal police activity also occur at high rates and whether other states would follow this trend. No cases were dropped.
+  
+  
+## 3. Wrangling
+```{R}
+#Usage of the 6 core dplyer functions (filter, select, arrange, group_by, mutate, summarize)
+Merged_Data %>% filter(state_abbrev == "TX") %>% summarize(victims = n())
+Merged_Data %>% select(state_abbrev, raceethnicity, armed)
+Merged_Data %>% arrange(-avg_hatecrimes_per_100k_fbi) %>% select(state_abbrev, avg_hatecrimes_per_100k_fbi) %>% distinct(state_abbrev, .keep_all = TRUE)
+Merged_Data %>% group_by(state_abbrev, raceethnicity) %>% summarize(count = n())
+Merged_Data %>% mutate(share_non_poverty_white = 1 - share_white_poverty)
+Merged_Data %>% summarize(min(avg_hatecrimes_per_100k_fbi), max(avg_hatecrimes_per_100k_fbi))
+
+#Summary Statistics (Mean, Median, Minimum, Maximum, and Standard Deviation)
+#1-5
+Merged_Data %>% summarize(mean_hs_diploma = mean(share_pop_hs), median_hs_diploma = median(share_pop_hs), minimum_hs_diploma = min(share_pop_hs), maximum_hs_diploma = max(share_pop_hs), Std_Dev_hs_diploma = sd(share_pop_hs))
+Merged_Data %>% summarize(mean_median_house_income = mean(median_house_inc), median_median_house_income = median(median_house_inc), minimum_median_house_income = min(median_house_inc), maximum_median_house_income = max(median_house_inc), Std_Dev_median_house_income = sd(median_house_inc))
+Merged_Data %>% summarize(mean_unemployed = mean(share_unemp_seas), median_unemployed = median(share_unemp_seas), minimum_unemployed = min(share_unemp_seas), maximum_unemployed = max(share_unemp_seas), Std_Dev_unemployed = sd(share_unemp_seas))
+Merged_Data %>% summarize(mean_non_citizen = mean(share_non_citizen), median_non_citizen = median(share_non_citizen), minimum_non_citizen = min(share_non_citizen), maximum_non_citizen = max(share_non_citizen), Std_Dev_non_citizen = sd(share_non_citizen))
+Merged_Data %>% summarize(mean_non_white = mean(share_non_white), median_non_white = median(share_non_white), minimum_non_white = min(share_non_white), maximum_non_white = max(share_non_white), Std_Dev_non_white = sd(share_non_white))
+#6-10
+Merged_Data %>% summarize(mean_voted_trump = mean(share_vote_trump), median_voted_trump = median(share_vote_trump), minimum_voted_trump = min(share_vote_trump), maximum_voted_trump = max(share_vote_trump), Std_Dev_voted_trump = sd(share_vote_trump))
+Merged_Data %>% summarize(mean_avg_hatecrimes_btwn_2010_2015 = mean(avg_hatecrimes_per_100k_fbi), median_avg_hatecrimes_btwn_2010_2015 = median(avg_hatecrimes_per_100k_fbi), minimum_avg_hatecrimes_btwn_2010_2015 = min(avg_hatecrimes_per_100k_fbi), maximum_avg_hatecrimes_btwn_2010_2015 = max(avg_hatecrimes_per_100k_fbi), Std_Dev_avg_hatecrimes_btwn_2010_2015 = sd(avg_hatecrimes_per_100k_fbi))
+Merged_Data %>% summarize(mean_gini_index = mean(gini_index), median_gini_index = median(gini_index), minimum_gini_index = min(gini_index), maximum_gini_index = max(gini_index), Std_Dev_gini_index = sd(gini_index))
+Merged_Data %>% group_by(raceethnicity) %>% summarize(mean_avg_hatecrimes_btwn_2010_2015 = mean(avg_hatecrimes_per_100k_fbi), median_avg_hatecrimes_btwn_2010_2015 = median(avg_hatecrimes_per_100k_fbi), minimum_avg_hatecrimes_btwn_2010_2015 = min(avg_hatecrimes_per_100k_fbi), maximum_avg_hatecrimes_btwn_2010_2015 = max(avg_hatecrimes_per_100k_fbi), Std_Dev_avg_hatecrimes_btwn_2010_2015 = sd(avg_hatecrimes_per_100k_fbi))
+Merged_Data %>% group_by(raceethnicity, armed) %>% summarize(mean_household_income = mean(h_income), median_household_income = median(h_income), minimum_household_income = min(h_income), maximum_household_income = max(h_income), Std_Dev_household_income = sd(h_income))
+```
+
+  Using the six core dplyr functions, I manipulated the data in order to discover various results. Filtering only for Texas, I found that 37 people were killed in 2015. Using arrange, I found that D.C. has the highest average amount of hate crimes per 100k people during the stretch of 2010-2015. In fact, 7 of the top 10 states with the highest average hate crimes per 100k people were states on the Eastern side of the United states, with the 3 Western states being Washington, Arizona, and Oregon respectively. Texas, surprisingly, ranks near the bottom at 0.7527683 hate crimes per 100k people. Using group_by, I organized the data to display each state and the amount of people killed due to police brutality per race/ethnicity. In 2015, California found itself at the top in the number of people killed for each race, with Asian/Pacific Islander people at 3, Black people at 14, Hispanic/Latino people at 25, and White people at 27. Using summarize, through the stretch of 2010-2015, the lowest average hate crimes committed per 100k people for a state was 0.4120118 and the highest was 10.95348.
+  Using the summary statistics of mean, median, min, max, and standard deviation, I found interesting results. The average proportion of non-white citizens in a state was 0.411475 of the population, the median was 0.42, the minimum of any state was 0.07, the maximum of any state was 0.63, and the standard deviation was 0.1486803. The average proportion of voting citizens who voted for Trump in the 2016 election in all states was 0.47215, the median was 0.49, the minimum of any state was 0.04, the maximum of any state was 0.69, and the standard deviation was 0.1008877. These two results represents the massive divide in this country. A state can have a non-white population of anywhere from 7% of the population to 63% of the population. This huge range shows the difference in an individual who grows up and lives with a large amount of diversity and an individual who doesn't, and could potentially account for why hate crimes and police brutality are in an uptick as of recently. Grouping by the race/ethnicity and by whether the victim was armed or not, it can be seen that the average household income for unarmed Hispanic/Latino and Native American Victims were the lowest compared to if they were armed. 
+  
+## 4. Visualizing
+```{R}
+mydata <- Merged_Data %>% select(-year, -urate, -tract_ce, -state_fp, -pop, -pov, -p_income, -nat_bucket, -longitude, -latitude, -geo_id, -day, -county_bucket, -county_id, -county_fp, -college, -age) %>% select_if(is_numeric)
+cormat <- mydata %>% cor(use="pair")
+cormat <- cormat %>% as.data.frame %>% rownames_to_column("Var1") %>% pivot_longer(., cols = 2:ncol(.), names_to = "Var2", values_to= "Correlation")
+cormat %>% ggplot(aes(Var1, Var2, fill = Correlation)) + geom_tile(color = "white") + theme(axis.text.y = element_text(size = 9)) + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 9))+ coord_fixed() + labs(title = "Data from Hate Crimes and Police Brutality")
+```
+  This correlation heatmap shows that there is a relationship between the proportion of White people in a population and the average income of the household, in which the higher the proportion the higher the average income of the household. Inversely, the higher the proportion of Black people in a population the lower the average income of the household. There is also a high correlation between the proportion of impoverished White population and the proportion of the voting population who voted for Trump in the 2016 election.
+```{R}
+Merged_Data %>% ggplot(aes(x=state_abbrev, y= h_income, color = raceethnicity)) + geom_point(stat = 'summary', size = 2) + labs(x="State", y = "Household Income", color = "Race/Ethnicity", title = "Household Income Of Victim With Respect To Race And State")+ theme_bw() + theme(axis.text.x = element_text(angle = 90, size = 9)) +scale_y_continuous(breaks = seq(0, 160000, by =20000))
+```
+  This plot presents the household income of each individual that was slain by police with respect to their race/ethnicity and the state it occurred in. This plot shows that Black individuals that are killed by police typically have a lower pay than the White individuals who were also killed. This can be interpreted in that violent police action will occur more often in impoverished Black neighborhoods than impoverished White neighborhoods across the United States. There is much more fatal police action to lower income individuals than the comparatively higher income individuals. This can be interpreted that fatal police action is more often seen in poorer areas of the United States. 
+  
+```{R}
+Merged_Data %>% ggplot(aes(x = raceethnicity, fill = armed)) + geom_bar(position = "dodge") + labs(x="Race/Ethnicity", y = "# of People Killed", color = "Armed", title = "Victim's Race and If They Were Armed")+scale_y_continuous(breaks = seq(0, 140, by =20))
+
+```
+  This plot shows the victim's race and whether they were armed or not. A clear pattern to be seen is that most people of each race/ethnicity that were killed by police had a firearm on them. While it can be said that White individuals are killed the most by police, they are also the race/ethnicity that most frequently has a firearm with them at the time of their murder. Despite having less overall deaths compared to White individuals, Black individuals are just slightly below in the amount of unarmed deaths. Asian/Pacific Islander and Native American individuals see generally the same trend in which victims with firearms account for the highest number of deaths respective to their race/ethnicity, however they also see the lowest total amount of deaths. It should also be noted that Black individuals encounter the highest relative deaths with their armament being a vehicle compared to the other races/ethnicities.
+  
+
+## 5. Dimension Reduction
+
+```{R}
+clust_dat<-Merged_Data%>%dplyr::select(share_vote_trump,share_white_poverty,avg_hatecrimes_per_100k_fbi)
+set.seed(348)
+sil_width<-vector() #empty vector to hold mean sil width
+for(i in 2:10){  
+  kms <- kmeans(clust_dat,centers=i) #compute k-means solution
+  sil <- silhouette(kms$cluster,dist(clust_dat)) #get sil widths
+  sil_width[i]<-mean(sil[,3]) #take averages (higher is better)
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10) + labs(x="Number of Clusters", y = "Silhouette Width", title = "Determining How Many Clusters")
+
+fit <- kmeans(clust_dat, 9)
+clusplot(clust_dat, fit$cluster, color=TRUE, shade=TRUE, labels = 1, lines =0)
+```
+  As seen in the first plot, the number of clusters to use is 9 because of the highest silhouette width. I found that there is a relation between the proportion of the voting population who voted for Trump in the 2016 election, the proportion of the White population who is in poverty, and the average number of hate crimes committed between 2010 and 2015 per 100k people. There is an 84.57% explanation of the point variability, which is very strong.  
