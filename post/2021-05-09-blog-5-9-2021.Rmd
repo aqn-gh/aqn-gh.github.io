@@ -1,0 +1,19 @@
+---
+title: Blog 5/9/2021
+author: ''
+date: '2021-05-09'
+slug: blog-5-9-2021
+categories: []
+tags: []
+description: ''
+---
+
+```{R}
+library(reticulate)
+i_hope <- "It does"
+```
+
+```{python}
+this_works = "work!"
+print(r.i_hope, this_works)
+```
